@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML, CSS, JS IDE EDITOR</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/material-darker.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/eclipse.min.css">
+<!-- Add more theme stylesheets as needed -->
+    <style>
+        /* General body and container styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e1e1e, #282c34);
+    color: #e0e0e0;
+    padding: 20px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header styling */
+h1 {
+    color: #61dafb;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(97, 218, 251, 0.7);
+}
+
+/* Navigation bar styling */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    background: #2a2a2a;
+    border-bottom: 1px solid #333;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.nav-bar button {
+    background: linear-gradient(135deg, #61dafb, #21a1f1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #fff;
+    padding: 12px 24px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.nav-bar button:hover {
+    background: linear-gradient(135deg, #21a1f1, #61dafb);
+    transform: translateY(-2px);
+}
+
+.nav-bar button:active {
+    transform: translateY(1px);
+}
+
+/* Editor container and individual editors */
+.editor-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.editor {
+    width: 32%;
+    box-sizing: border-box;
+    margin-right: 10px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #1e1e1e;
+    position: relative;
+}
+
+.editor:last-child {
+    margin-right: 0;
+}
+
+@media (max-width: 768px) {
+    .editor-container {
+        flex-direction: column;
+    }
+
+    .editor {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .editor:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* CodeMirror editor specific styles */
+.CodeMirror {
+    height: 300px; /* Increased height */
+    border-radius: 8px;
+    font-size: 14px;
+    overflow: hidden;
+    border: 1px solid #333;
+    background: #1e1e1e; /* Set background color to dark for code area */
+    color: #e0e0e0; /* Set text color to light gray for better visibility */
+}
+
+.CodeMirror-gutters {
+    background: #1e1e1e;
+    border-right: 1px solid #333;
+}
+
+.CodeMirror-lines {
+    color: #e0e0e0; /* Ensure line color is light for better contrast */
+}
+
+/* Output container and button styles */
+.output-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.output-button, .clear-button {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #61dafb, #21a1f1);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+    margin-left: 20px; /* Add some space between run and clear buttons */
+}
+
+.output-button:hover {
+    background: linear-gradient(135deg, #21a1f1, #61dafb);
+    transform: translateY(-2px);
+}
+
+.output-button:active {
+    transform: translateY(1px);
+}
+
+.clear-button {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.clear-button:hover {
+    background: linear-gradient(135deg, #d32f2f, #f44336);
+    transform: translateY(-2px);
+}
+
+.clear-button:active {
+    transform: translateY(1px);
+}
+
+/* Iframe and output text styling */
+iframe {
+    width: 100%;
+    height: 400px;
+    background-color: white;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.error-output, .test-output {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.error-output {
+    color: #ff4d4d;
+}
+
+.test-output {
+    color: #4caf50;
+}
+
+/* Updated Settings menu styling */
+#settingsMenu {
+    display: none;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: rgba(30, 30, 30, 0.95); /* Slightly darker and more opaque */
+    border: 1px solid #444;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7); /* Increased shadow */
+    padding: 15px;
+    width: 300px; /* Wider menu */
+    z-index: 10;
+}
+
+#settingsMenu label {
+    display: block;
+    margin-bottom: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+#settingsMenu input[type="file"] {
+    width: calc(100% - 20px); /* Adjust width with padding */
+}
+
+#settingsMenu button {
+    background: linear-gradient(135deg, #ff5722, #e64a19);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    transition: background 0.3s, transform 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#settingsMenu button:hover {
+    background: linear-gradient(135deg, #e64a19, #ff5722);
+    transform: translateY(-2px);
+}
+
+#settingsMenu button:active {
+    transform: translateY(1px);
+}
+
+#settingsMenu select {
+    width: calc(100% - 20px);
+    background: #333;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.menu {
+  background-color: #2a2a2a;
+  width: 220px;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu ul li {
+  margin: 10px 0;
+}
+
+.menu ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.menu ul li a i {
+  margin-right: 10px;
+}
+
+.menu ul li a:hover {
+  background-color: #444;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+/* Futuristic icon styles */
+.icon {
+  width: 24px;
+  height: 24px;
+  background: url('icon.png') no-repeat center center;
+  background-size: contain;
+}
+</style>
+</head>
+<body>
+    <h1>HTML, CSS, JS IDE EDITOR</h1>
+    <div class="nav-bar">
+        <button id="htmlTab">HTML</button>
+        <button id="cssTab">CSS</button>
+        <button id="jsTab">JavaScript</button>
+        <button id="settingsToggle">Settings</button>
+    </div>
+<div id="settingsMenu" class="settings-menu">
+    <button class="close-btn" onclick="closeSettings()">𝐂𝐋𝐈𝐂𝐊 𝐓𝐎 𝐂𝐋𝐎𝐒𝐄</button>
+    <label for="fileUpload">Upload file:</label>
+    <input type="file" id="fileUpload" />
+    <button id="fileUploadButton">Load File</button>
+    <label for="themeSelect">Select Theme:</label>
+    <select id="themeSelect">
+        <option value="material-darker">Material Darker</option>
+        <option value="dracula">Dracula</option>
+        <option value="monokai">Monokai</option>
+        <option value="eclipse">Eclipse</option>
+    </select> 
+     <div class="menu">
+  <ul>
+    <li><a href="https://namnijamni96.github.io/Introduction/"><i class="icon"></i> ╰┈➤ Introduction</a></li>
+    <li><a href="https://namnijamni96.github.io/Licence/"><i class="icon"></i>🧾 licence</a></li>
+    <li><a href="https://www.instagram.com/its_sketch_artist__"><i class="icon"></i>   🅾 Instagram Page</a></li>
+    <li><a href="https://github.com/Namnijamni96"><i class="icon"></i>🐈‍⬛ Visit on GitHub</a></li>
+    <li><a href="https://namnijamni96.github.io/About-ide-editor-/"><i class="icon"></i> ✉️ About</a></li>
+  </ul>
+</div>
+  
+</div>
+
+    <div class="editor-container">
+        <div id="htmlEditor" class="editor">
+            <h3>HTML</h3>
+            <textarea id="htmlCode" placeholder="Write HTML code here..."></textarea>
+        </div>
+
+        <div id="cssEditor" class="editor" style="display: none;">
+            <h3>CSS</h3>
+            <textarea id="cssCode" placeholder="Write CSS code here..."></textarea>
+        </div>
+
+        <div id="jsEditor" class="editor" style="display: none;">
+            <h3>JavaScript</h3>
+            <textarea id="jsCode" placeholder="Write JavaScript code here..."></textarea>
+        </div>
+    </div>
+
+    <div class="output-container">
+        <button id="outputButton" class="output-button">Run</button>
+        <button id="clearButton" class="clear-button">Clear</button>
+    </div>
+
+    <iframe id="outputFrame"></iframe>
+
+    <div id="errorOutput" class="error-output"></div>
+    <div id="testOutput" class="test-output"></div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/monokai.min.css"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/eclipse.min.css"></script>
+<script>
+    // Initialize CodeMirror editors
+    const htmlEditor = CodeMirror.fromTextArea(document.getElementById('htmlCode'), {
+        mode: 'xml',
+        lineNumbers: true,
+        theme: 'material-darker'
+    });
+
+    const cssEditor = CodeMirror.fromTextArea(document.getElementById('cssCode'), {
+        mode: 'css',
+        lineNumbers: true,
+        theme: 'material-darker'
+    });
+
+    const jsEditor = CodeMirror.fromTextArea(document.getElementById('jsCode'), {
+        mode: 'javascript',
+        lineNumbers: true,
+        theme: 'material-darker'
+    });
+
+    // Function to save code to localStorage
+    function saveCodeToLocalStorage() {
+        localStorage.setItem('htmlCode', htmlEditor.getValue());
+        localStorage.setItem('cssCode', cssEditor.getValue());
+        localStorage.setItem('jsCode', jsEditor.getValue());
+    }
+
+    // Function to load saved code from localStorage
+    function loadCodeFromLocalStorage() {
+        const savedHtmlCode = localStorage.getItem('htmlCode');
+        const savedCssCode = localStorage.getItem('cssCode');
+        const savedJsCode = localStorage.getItem('jsCode');
+
+        if (savedHtmlCode) htmlEditor.setValue(savedHtmlCode);
+        if (savedCssCode) cssEditor.setValue(savedCssCode);
+        if (savedJsCode) jsEditor.setValue(savedJsCode);
+    }
+
+    // Save code when the user types something
+    htmlEditor.on('change', saveCodeToLocalStorage);
+    cssEditor.on('change', saveCodeToLocalStorage);
+    jsEditor.on('change', saveCodeToLocalStorage);
+
+    // Load saved code when the page loads
+    loadCodeFromLocalStorage();
+
+    // Settings menu toggle
+    document.getElementById('settingsToggle').addEventListener('click', function() {
+        const settingsMenu = document.getElementById('settingsMenu');
+        settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    
+     function closeSettings() {
+    document.getElementById('settingsMenu').style.display = 'none';
+}
+
+    // File upload functionality
+    document.getElementById('fileUploadButton').addEventListener('click', function() {
+        const fileInput = document.getElementById('fileUpload');
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const fileName = file.name.toLowerCase();
+
+                if (fileName.endsWith('.html')) {
+                    htmlEditor.setValue(content);
+                    cssEditor.setValue('');
+                    jsEditor.setValue('');
+                } else if (fileName.endsWith('.css')) {
+                    htmlEditor.setValue('');
+                    cssEditor.setValue(content);
+                    jsEditor.setValue('');
+                } else if (fileName.endsWith('.js')) {
+                    htmlEditor.setValue('');
+                    cssEditor.setValue('');
+                    jsEditor.setValue(content);
+                } else {
+                    alert('Unsupported file type. Please upload HTML, CSS, or JavaScript files.');
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert('No file selected.');
+        }
+    });
+
+    // Tab switching functionality
+    document.getElementById('htmlTab').addEventListener('click', function() {
+        document.getElementById('htmlEditor').style.display = 'block';
+        document.getElementById('cssEditor').style.display = 'none';
+        document.getElementById('jsEditor').style.display = 'none';
+    });
+
+    document.getElementById('cssTab').addEventListener('click', function() {
+        document.getElementById('htmlEditor').style.display = 'none';
+        document.getElementById('cssEditor').style.display = 'block';
+        document.getElementById('jsEditor').style.display = 'none';
+    });
+
+    document.getElementById('jsTab').addEventListener('click', function() {
+        document.getElementById('htmlEditor').style.display = 'none';
+        document.getElementById('cssEditor').style.display = 'none';
+        document.getElementById('jsEditor').style.display = 'block';
+    });
+
+    // Function to run the user's code
+    document.getElementById('outputButton').addEventListener('click', function() {
+        runUserCode();
+    });
+
+    function runUserCode() {
+        const htmlCode = htmlEditor.getValue();
+        const cssCode = cssEditor.getValue();
+        const jsCode = jsEditor.getValue();
+        const outputFrame = document.getElementById('outputFrame');
+        const errorOutput = document.getElementById('errorOutput');
+        errorOutput.textContent = '';
+
+        try {
+            // Create a Blob for the HTML, CSS, and JS code
+            const combinedCode = `
+                <html>
+                <head>
+                    <style>${cssCode}</style>
+                </head>
+                <body>
+                    ${htmlCode}
+                    <script>${jsCode}<\/script>
+                </body>
+                </html>
+            `;
+            const blob = new Blob([combinedCode], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+
+            // Load the Blob URL into the iframe
+            outputFrame.src = url;
+
+            // Revoke the URL after the iframe content is loaded
+            outputFrame.onload = () => URL.revokeObjectURL(url);
+        } catch (error) {
+            errorOutput.textContent = 'Error: ' + error.message;
+        }
+    }
+
+    // New Clear button functionality to clear all editors
+    document.getElementById('clearButton').addEventListener('click', function() {
+        htmlEditor.setValue('');
+        cssEditor.setValue('');
+        jsEditor.setValue('');
+        localStorage.clear(); // Clears saved code from localStorage
+    });
+
+    // Theme switching functionality
+    document.getElementById('themeSelect').addEventListener('change', function() {
+        const theme = this.value;
+        htmlEditor.setOption('theme', theme);
+        cssEditor.setOption('theme', theme);
+        jsEditor.setOption('theme', theme);
+    });
+</script>
+</body>
+</html>
